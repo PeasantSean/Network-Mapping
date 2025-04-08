@@ -88,55 +88,129 @@ Why use a VM when I can only scan my home network? I can't sumulate one since I 
 ***
 
 <br>
-
 In virtualbox's network setting, what does "cable connected" mean?
-- Refers to a physical ethernet cable providing internet to the host machine...im currently on wifi, this doesnt apply to me
 
-***
-<br>
-
-How do i find out my subnet?
-    - 
-    
+- refers to a physical ethernet cable providing internet to the host machine...im currently on wifi, this doesnt apply to me
 ***
 <br>
 
 Why did ubuntu server take so long to load when i changed the network settings to "bridged"? 
-    - 
+- It was attempting to make a connection, but wasn't actual connected via ethernet
 
 ***
 <br>
 
-Why dont I have internet connection with bridged connention  
-- Possibly related to "cable connected" checkbox in virtualbox networ settings?
-- Wifi isnt capable, I had to use ethernet
+Why dont I have internet connection with bridged connention  -possibly related to "cable connected" checkbox in virtualbox networ settings?
+- Wifi isnt capable, i had to use ethernet
 
 ***
 <br>
 
-How do I find my host network interface, is that the same as adapter type?
-- Yes
+How do i find my host network interface, is that the same as adapter type?
+
+- yes
  - `ip a`
- - Look for `eth0` or `enp3s0` for wired (ethernet) interfaces and `wlan0` or `wlp2s0` for wifi. 
+ - look for `eth0` or `enp3s0` for wired (ethernet) interfaces and `wlan0` or `wlp2s0` for wifi. 
 
 ***
 <br>
 
-What is the intel pro/1000 mt desktop (82540em) adapter type?
-    - 
-***
-<br>
-
-Ubuntu server bridged connection troubloeshooting:
+Ubuntu server bridged connection troubleshooting:
 - Check network settings and choose correct adapter type: `ip a`
  - Restart network settings: `sudo systemctl restart Networkanager`
 
 ***
 <br>
 
-Error: `NetworkManager.service not found`
-- Check if NetworkManager is Installed: dpkg -l | grep network-manager
-- Install: sudo apt update && sudo aps install network-manager -y
+What does this error mean:
+`NetworkManager.service not found`
+- Check if NetworkManager is Installed: `dpkg -l | grep network-manager`
+- Install: `sudo apt update && sudo aps install network-manager -y`
 
 ***
 <br>
+
+IP Address breakdown
+IP Address: 10.0.x.x/y
+- The 10.0.x.x part is the host IP address.
+
+- The /y part is the CIDR notation showing how many bits are used for the network portion of the address.
+
+- Subnet Address: 10.0.x.x
+
+- Subnet Mask: 255.255.255.0
+
+- Range of usable host IPs: 10.0.x.1 to 10.0.x.254
+
+- Broadcast Address: 10.0.x.255
+***
+<br>
+
+What Is a Subnet?
+A subnet a smaller chunk of a larger network. It allows you to:
+
+- Segment devices logically (e.g., servers vs. clients)
+
+- Control traffic more efficiently
+
+- Apply different rules (like firewall policies) per subnet
+
+***
+<br>
+
+What does this error mean:
+`Host seems down. If it is really up, but blocking our ping probes, try -Pn`
+
+- The target didn’t respond to the ping.
+
+- It might still be online, but not replying to ICMP (ping) because of a firewall or isolated network in a VM
+
+Solution
+1. Try -Pn (as Nmap suggested)
+This tells Nmap not to ping and just go ahead with the scan: `nmap -Pn 10.0.x.x`
+
+Summary:
+That error = Nmap pinged your VM and got no response.
+
+-Pn skips the ping step.
+
+Best fix: use Bridged mode so the VM is on the same network as your host.
+***
+<br>
+Why am I still receiving the same error when connected with bridged network?
+
+1. Could be firewall bloackage:
+   `sudo ufw status`
+
+  Temporarily disable it:
+   `sudo ufw disable`
+
+   After completing the scan, remember to re-enable it:
+   `sudo ufw enable`
+
+2. VM network settings
+
+3. Ensure Devices Are on the Same Subnet  
+
+4. Use a More Specific Nmap Command  
+   `sudo nmap -sn 10.x.x.x/y`
+
+5. Increase Timeout or Retry  
+   `sudo nmap -sn -T4 10.x.x.x/y`
+
+6. Check Host Device's Network Settings  
+
+7. Scan from the Host Network (to isolate whether the issue is with the VM):
+   `sudo nmap -sn 10.x.x.x/y`
+
+***
+<br>
+
+How come using nmap without the /y portion of 10.0.x.x/y fails to return a list of devices:
+
+- That scans the net address and not the specific host
+***
+<br>
+
+What is a network manager, and how do I install it?
+
